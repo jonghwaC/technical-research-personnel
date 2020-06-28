@@ -19,12 +19,13 @@
     </style>
     <script src="https://unpkg.com/@google/markerclustererplus@4.0.1/dist/markerclustererplus.min.js"></script>
   </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/OverlappingMarkerSpiderfier/1.0.3/oms.min.js"></script>
   </head>
   <body>
     <div id="map"></div>
     <script>
         var gmarkers = [];
-
+        
         function addMarker(props, map){
             var marker = new google.maps.Marker({
                 position: new google.maps.LatLng(props.corrds.lat, props.corrds.lng),
@@ -42,7 +43,6 @@
                 infoWindow.open(map,marker);
                 });
             }
-            console.log(marker)
             return marker;
         }
            
@@ -53,6 +53,12 @@
           center: {lat: 37.3947464, lng: 127.1090181}
         });
 
+        var oms = new OverlappingMarkerSpiderfier(map, { 
+          markersWontMove: true,   // we promise not to move any markers, allowing optimizations
+          markersWontHide: true,   // we promise not to change visibility of any markers, allowing optimizations
+          basicFormatEvents: true  // allow the library to skip calculating advanced formatting information
+        }); 
+
         var script = document.createElement('script')
         script.src = './trp.geojsonp'
         document.getElementsByTagName('head')[0].appendChild(script)
@@ -60,22 +66,18 @@
         window.ams_callback = function(results) {
             for (var i = 0; i < results.features.length; i++) {
                 var coords = results.features[i].geometry.coordinates;
-                // var latLng = new google.maps.LatLng(coords[0],coords[1]);
-                // var marker = new google.maps.Marker({
-                //     position: latLng,
-                //     map: map,
-                //     label: results.features[i].properties.name
-                // });
                 var marker = {corrds: {lat : parseFloat(coords[0]), lng : parseFloat(coords[1])}, iconImage:"", content:results.features[i].properties.name}
-                gmarkers.push(addMarker(marker,map));
-            
+                mrk = addMarker(marker,map)
+                gmarkers.push(mrk);
+                oms.addMarker(mrk);
             }
             console.log(results.features.length)
             console.log(gmarkers.length)
-            var markerCluster = new MarkerClusterer(map, gmarkers,{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+            // var markerCluster = new MarkerClusterer(map, gmarkers,{imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
         }  
        
       }
+      
     </script>
     <!-- Replace following script src -->
     
