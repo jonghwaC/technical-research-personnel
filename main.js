@@ -10,9 +10,20 @@ function addMarker(props, map){
         marker.setIcon(props.iconImage);
     }
     
-    if(props.content){
+    if(props.properties){
+        var contentString = '<div id="content">'+
+        '<div id="siteNotice">'+
+        '</div>'+
+        '<h4 id="firstHeading" class="firstHeading">'+ props.properties.name +'</h4>'+
+        '<div id="bodyContent">'+
+        '<p> 분야 : ' + props.properties.type +'</br>'+
+        '선정년도 : ' + props.properties.selection_year + '</br>'+
+        '배정인원 : ' + props.properties.assignment + '</p>'
+        '</div>'+
+        '</div>';
+
         var infoWindow = new google.maps.InfoWindow({
-        content:props.content
+        content:contentString
         });
         marker.addListener('click',function(){
         infoWindow.open(map,marker);
@@ -41,7 +52,19 @@ function initMap() {
     window.ams_callback = function(results) {
         for (var i = 0; i < results.features.length; i++) {
             var coords = results.features[i].geometry.coordinates;
-            var marker = {corrds: {lat : parseFloat(coords[0]), lng : parseFloat(coords[1])}, iconImage:"", content:results.features[i].properties.name}
+            iconString = "";
+            if (results.features[i].properties.type === "중소기업부설연구소"){
+                iconString = "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png"
+            }else if (results.features[i].properties.type === "벤처기업부설연구소"){
+                iconString = "http://maps.google.com/mapfiles/ms/icons/red-dot.png"
+            }else if (results.features[i].properties.type === "대기업부설연구소"){
+                iconString = "http://maps.google.com/mapfiles/ms/icons/blue-dot.png"
+            }else if (results.features[i].properties.type === "중견기업부설연구소"){
+                iconString = "http://maps.google.com/mapfiles/ms/icons/purple-dot.png"
+            }else {
+                iconString = "http://maps.google.com/mapfiles/ms/icons/green-dot.png"
+            }
+            var marker = {corrds: {lat : parseFloat(coords[0]), lng : parseFloat(coords[1])}, iconImage:iconString, properties:results.features[i].properties}
             mrk = addMarker(marker,map)
             gmarkers.push(mrk);
             oms.addMarker(mrk);
@@ -66,14 +89,12 @@ var timer
 $('#searchInput').keyup(function () {
     clearTimeout(timer);
     timer = setTimeout(function (event) {
-        console.log('Search keypress');
         var text = $('#searchInput').val();
         if (text === ""){
             $("#searchResult").html("")
             return
         }
         result = search(text)
-        console.log(result)
         if (result.length > 0){
             $("#searchResult").html("")
             tmpString = '<ul class="list-group">\n'
@@ -99,7 +120,6 @@ function toMove(keyword){
     window.map.panTo(center)
     window.map.setZoom(20)
     timer = setTimeout(function (event) {
-        window.map.setZoom(18)
-        console.log("zoom")
-    }, 500);
+        window.map.setZoom(16)
+    }, 750);
 }
